@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+"""
+A function to return a list of integers
+Returns an empty list if n <= 0
+Can assume n will be always an integer
+"""
+
 def pascal_triangle(n):
     if n <= 0:
         return []
