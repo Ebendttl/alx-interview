@@ -1,13 +1,10 @@
 #!/usr/bin/python3
 """
-Log parsing script that reads stdin line by line and computes metrics.
+Module that parses a log and prints stats to stdout
 """
+from sys import stdin
 
-import sys
-
-# Initialize metrics
-total_file_size = 0
-status_code_counts = {
+status_codes = {
     "200": 0,
     "301": 0,
     "400": 0,
@@ -17,46 +14,34 @@ status_code_counts = {
     "405": 0,
     "500": 0
 }
-line_count = 0
+
+size = 0
 
 
 def print_stats():
-    """Prints the current statistics."""
-    print("File size: {}".format(total_file_size))
-    for code in sorted(status_code_counts.keys()):
-        if status_code_counts[code] > 0:
-            print("{}: {}".format(code, status_code_counts[code]))
+    """Prints the accumulated logs"""
+    print("File size: {}".format(size))
+    for status in sorted(status_codes.keys()):
+        if status_codes[status]:
+            print("{}: {}".format(status, status_codes[status]))
 
 
-try:
-    for line in sys.stdin:
-        line_count += 1
-        try:
-            # Split the line by spaces
-            parts = line.split()
-            # Extract status code and file size
-            status_code = parts[-2]
-            file_size = int(parts[-1])
-
-            # Update total file size
-            total_file_size += file_size
-
-            # Update status code counts
-            if status_code in status_code_counts:
-                status_code_counts[status_code] += 1
-
-        except (IndexError, ValueError):
-            # Skip lines that don't match the expected format
-            continue
-
-        # Print statistics after every 10 lines
-        if line_count % 10 == 0:
-            print_stats()
-
-except KeyboardInterrupt:
-    # Print statistics when interrupted by CTRL + C
+if __name__ == "__main__":
+    count = 0
+    try:
+        for line in stdin:
+            try:
+                items = line.split()
+                size += int(items[-1])
+                if items[-2] in status_codes:
+                    status_codes[items[-2]] += 1
+            except:
+                pass
+            if count == 9:
+                print_stats()
+                count = -1
+            count += 1
+    except KeyboardInterrupt:
+        print_stats()
+        raise
     print_stats()
-    raise
-
-# Print final statistics if the loop ends normally
-print_stats()
